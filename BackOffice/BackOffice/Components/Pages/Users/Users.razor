@@ -47,7 +47,6 @@
 
     async Task UpdateUser(UserViewModel user)
     {
-        // Send HTTP PUT request to update user
         var response = await HttpClient.PutAsJsonAsync($"https://webapi-win23jsbackend-sarahtibblin.azurewebsites.net/api/User/{user.Id}", user);
         if (response.IsSuccessStatusCode)
         {
@@ -61,11 +60,9 @@
 
     async Task DeleteUser(string userId)
     {
-        // Send HTTP DELETE request to delete user
         var response = await HttpClient.DeleteAsync($"https://webapi-win23jsbackend-sarahtibblin.azurewebsites.net/api/User/{userId}");
         if (response.IsSuccessStatusCode)
         {
-            // Remove the deleted user from the list
             users.RemoveAll(u => u.Id == userId);
             StatusMessage = "User deleted successfully";
         }
