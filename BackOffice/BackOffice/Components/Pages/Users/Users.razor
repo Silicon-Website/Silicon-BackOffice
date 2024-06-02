@@ -1,0 +1,85 @@
+﻿@page "/users"
+@inject HttpClient HttpClient
+@rendermode InteractiveServer
+
+<h1>User Management</h1>
+<span class="success-message">@StatusMessage</span>
+
+@if (users != null)
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td><input @bind="user.UserName" /></td>
+                    <td><input @bind="user.Email" /></td>
+                    <td>
+                        <select @bind="user.Role">
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </select>
+                    </td>
+                    <td><button @onclick="()=>UpdateUser(user)">Save</button></td>
+                    <td><button @onclick="()=>DeleteUser(user.Id)">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<UserViewModel> users;
+    private string? StatusMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await HttpClient.GetFromJsonAsync<List<UserViewModel>>("https://webapi-win23jsbackend-sarahtibblin.azurewebsites.net/api/User");
+    }
+
+    async Task UpdateUser(UserViewModel user)
+    {
+        // Send HTTP PUT request to update user
+        var response = await HttpClient.PutAsJsonAsync($"https://webapi-win23jsbackend-sarahtibblin.azurewebsites.net/api/User/{user.Id}", user);
+        if (response.IsSuccessStatusCode)
+        {
+            StatusMessage = "Your profile has been updated";
+        }
+        else
+        {
+            StatusMessage = "Failed to update profile";
+        }
+    }
+
+    async Task DeleteUser(string userId)
+    {
+        // Send HTTP DELETE request to delete user
+        var response = await HttpClient.DeleteAsync($"https://webapi-win23jsbackend-sarahtibblin.azurewebsites.net/api/User/{userId}");
+        if (response.IsSuccessStatusCode)
+        {
+            // Remove the deleted user from the list
+            users.RemoveAll(u => u.Id == userId);
+            StatusMessage = "User deleted successfully";
+        }
+        else
+        {
+            StatusMessage = "Failed to delete user";
+        }
+    }
+
+    public class UserViewModel
+    {
+        public string Id { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
+    }
+}
